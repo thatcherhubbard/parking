@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: parking-service-headless
+spec:
+  ports:
+    - port: 8000
+  selector:
+    app.kubernetes.io/name: parking
+  clusterIP: None

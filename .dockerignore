@@ -1,0 +1,6 @@
+_build/*
+deps/*
+*.md
+.elxir_ls/*
+k8s/*
+*.dump

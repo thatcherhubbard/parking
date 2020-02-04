@@ -39,7 +39,7 @@ Parking.Lot.track_entry("ABC 123", 1)
 # On gary or harry
 DeltaCrdt.read(Parking.Lot.Crdt)
 ```
-If `larry` is killed at this point, the four gates will distribute over the remaining two nodes.  The `read` command should be repeated to demonstrate that state was in fact shared across all the nodes.
+If `larry` is killed at this point, the gates will distribute over the remaining two nodes.  The `read` command should be repeated to demonstrate that state was in fact shared across all the nodes.
 
 ## Interesting things to add
 
@@ -49,4 +49,6 @@ If `larry` is killed at this point, the four gates will distribute over the rema
 - Write a Helm chart
 - Add a `Telemetry` implementation
 - Replace the eventually-consistent CRDT implementation with something based on [Raft](https://github.com/rabbitmq/ra) that won't return a value until there is consensus inside the cluster
+- Write a load-testing/benchmarking suite and corresponding telemetry updates
+- Implement a fanout mechanism (e.g [Manifold](https://github.com/thatcherhubbard/parking))
 

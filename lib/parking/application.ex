@@ -5,6 +5,11 @@ defmodule Parking.Application do
 
   use Application
 
+  require Logger
+
+  @max_gates 4
+  @max_spaces 100
+
   def start(_type, _args) do
     # Retrieve the topologies from the config
     topologies = Application.get_env(:libcluster, :topologies)
@@ -13,6 +18,40 @@ defmodule Parking.Application do
     children = [
       # Cluster supervisor
       {Cluster.Supervisor, [topologies, [name: Parking.ClusterSupervisor]]},
+      # Horde registry
+      {Horde.Registry, keys: :unique, name: Parking.Registry},
+      # Parking lot supervisor
+      {Parking.LotSupervisor, [[max_spaces: @max_spaces], [name: Parking.LotSupervisor]]},
+      # Gate supervisor
+      Supervisor.child_spec(
+        {Horde.DynamicSupervisor, strategy: :one_for_one, name: Parking.GateSupervisor},
+        id: :gate_supervisor
+      ),
+      # Horde cluster
+      %{
+        id: Parking.HordeConnector,
+        restart: :transient,
+        start: {
+          Task,
+          :start_link,
+          [
+            fn ->
+              # Join nodes to distributed Registry
+              Horde.Cluster.set_members(Parking.Registry, membership(Parking.Registry, nodes()))
+
+              Horde.Cluster.set_members(
+                Parking.GateSupervisor,
+                membership(Parking.GateSupervisor, nodes())
+              )
+
+              1..@max_gates |> Enum.map(&init_gate/1)
+
+              # Establish parking lot CRDT network
+              Parking.LotSupervisor.join_neighbourhood(nodes())
+            end
+          ]
+        }
+      },
       # Start the endpoint when the application starts
       ParkingWeb.Endpoint
       # Starts a worker by calling: Parking.Worker.start_link(arg)
@@ -31,4 +70,15 @@ defmodule Parking.Application do
     ParkingWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  defp nodes do
+    [Node.self()] ++ Node.list()
+  end
+
+  defp membership(horde, nodes) do
+    Enum.map(nodes, fn node -> {horde, node} end)
+  end
+
+  defp init_gate(number),
+    do: Horde.DynamicSupervisor.start_child(Parking.GateSupervisor, {Parking.Gate, number})
 end

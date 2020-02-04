@@ -9,7 +9,8 @@ defmodule Parking.Telemetry.LotInstrumenter do
       [:lot_supervisor, :lot_status, :car_exit]
     ]
 
-    Gauge.declare(name: :used_spaces_count, help: "Spaces occupied")
+    Gauge.declare(name: :entry_event_count, help: "Total entry events")
+    Gauge.declare(name: :exit_event_count, help: "Total exit events")
 
     :telemetry.attach_many("lot-instrumenter", events, &handle_event/4, nil)
   end
@@ -24,7 +25,7 @@ defmodule Parking.Telemetry.LotInstrumenter do
         _metadata,
         _config
       ) do
-    Gauge.inc(name: :used_spaces_count)
+    Gauge.inc(name: :entry_event_count)
   end
 
   def handle_event(
@@ -33,6 +34,6 @@ defmodule Parking.Telemetry.LotInstrumenter do
         _metadata,
         _config
       ) do
-    Gauge.dec(name: :used_spaces_count)
+    Gauge.inc(name: :exit_event_count)
   end
 end

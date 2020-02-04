@@ -43,3 +43,6 @@ The main `application.ex` file also needs changes to start the metrics endpoint 
 
 This is where the actual implementation of specific measurements is done.  For the Phoenix metrics, it's a simple `use` command because Phoenix already has intruments built into it.  You'll need to wrap whatever event(s) you want to respond to in the proper function spec, but aside from matching a signature, you can do whatever you want.
 
+## Distributed application considerations
+
+Telemetry events only get processed for the node on which they occurred.  So if three cars enter on three separate nodes, each nodes' `car_entry_event` counter will increment by 1.  

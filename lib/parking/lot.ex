@@ -71,16 +71,14 @@ defmodule Parking.Lot do
 
     # Update CRDT and state
 
-    time = System.monotonic_time()
-
-    DeltaCrdt.mutate(@crdt, :remove, [{:vehicle, license}, time], :infinity)
+    DeltaCrdt.mutate(@crdt, :remove, [{:vehicle, license}])
     vehicles = state |> Map.get(:vehicles) |> Map.delete(license)
 
     {:noreply, %{state | vehicles: vehicles}}
   end
 
   def handle_info(:update_state, state) do
-    # Read CRDT stater and group by key type
+    # Read CRDT state and group by key type
     crdt_state =
       DeltaCrdt.read(@crdt)
       |> Enum.group_by(fn {{k, _}, _} -> k end, fn {{_, kv}, v} -> {kv, v} end)

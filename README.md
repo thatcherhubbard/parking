@@ -2,13 +2,16 @@
 
 A simple example of running clustered processes and sharing state across them using a 𝛿-CRDT mechanism based on [this series of articles](https://metasyntactic.info/distributing-phoenix-part-1/).
 
-The series wasn't completed by the original author's stated intent, but it's a pretty concise run through the nuts-and-bolts of exploiting Elixir/BEAM clustering in Kubernetes, and also a nice introduction to CRDT mechanisms. Finally, it also is a decent example of how to use the runtime `Config` module in place of the compile-time `Mix.Config` and the Elixir 1.9+ release facility.
+The series wasn't completed by the original author's stated intent, but it's a concise and valuable run through the nuts-and-bolts of exploiting Elixir/BEAM clustering in Kubernetes, and also a nice introduction to CRDT mechanisms. Finally, it also is a decent example of how to use the runtime `Config` module in place of the compile-time `Mix.Config` and the Elixir 1.9+ release facility.
 
 ## Requirements
 
 No DB or anything required, it's basically:
 
 - Elixir (1.9.4 was the version developed against)
+
+If you want to actually build a release and deploy it to a Kubernetes cluster:
+
 - Minikube (1.6.2 running K8S 1.16.0 was the version developed against)
 
 ## Configuration
@@ -41,6 +44,12 @@ DeltaCrdt.read(Parking.Lot.Crdt)
 ```
 If `larry` is killed at this point, the gates will distribute over the remaining two nodes.  The `read` command should be repeated to demonstrate that state was in fact shared across all the nodes.
 
+## Features
+
+Since it's supposed to be a sandbox for developing good production-ready patterns and explaining the what and why, there's a specific documentation file for each:
+
+- [Telemetry](https://github.com/thatcherhubbard/parking/docs/TELEMETRY.md))
+
 ## Interesting things to add
 
 - Use `Config` to get the values for the number of gates and the number at runtime
@@ -50,5 +59,5 @@ If `larry` is killed at this point, the gates will distribute over the remaining
 - Add a `Telemetry` implementation
 - Replace the eventually-consistent CRDT implementation with something based on [Raft](https://github.com/rabbitmq/ra) that won't return a value until there is consensus inside the cluster
 - Write a load-testing/benchmarking suite and corresponding telemetry updates
-- Implement a fanout mechanism (e.g [Manifold](https://github.com/thatcherhubbard/parking))
+- Implement a fanout mechanism (e.g [Manifold](https://github.com/discordapp/manifold)
 

@@ -31,10 +31,12 @@ defmodule Parking.Lot do
 
   def track_entry(license, gate_number) do
     GenServer.cast(__MODULE__, {:track_entry, license, gate_number})
+    :telemetry.execute([:lot_supervisor, :lot_status, :car_entry], %{}, %{})
   end
 
   def track_exit(license, gate_number) do
     GenServer.cast(__MODULE__, {:track_exit, license, gate_number})
+    :telemetry.execute([:lot_supervisor, :lot_status, :car_exit], %{}, %{})
   end
 
   def available_spaces(), do: GenServer.call(__MODULE__, :available_spaces)

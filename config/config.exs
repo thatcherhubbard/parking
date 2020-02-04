@@ -14,6 +14,13 @@ config :parking, ParkingWeb.Endpoint,
   render_errors: [view: ParkingWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Parking.PubSub, adapter: Phoenix.PubSub.PG2]
 
+# Configures the telemetry endpoint
+config :parking, Parking.Telemetry.Endpoint,
+  http: [port: 9102],
+  debug_errors: true,
+  code_reloader: true,
+  check_origin: false
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

@@ -6,6 +6,12 @@ defmodule Parking.MixProject do
       app: :parking,
       version: "0.1.0",
       elixir: "~> 1.5",
+      releases: [
+        parking: [
+          applications: [parking: :permanent],
+          include_executables_for: [:unix]
+        ]
+      ],
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -40,7 +46,13 @@ defmodule Parking.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:prometheus, "~> 4.5"},
+      {:prometheus_ex, "~> 3.0"},
+      {:prometheus_phoenix, "~> 1.3"},
+      {:prometheus_plugs, "~> 1.1.5"},
+      {:prometheus_process_collector, "~> 1.4"},
+      {:telemetry, "~> 0.4.1"}
     ]
   end
 end

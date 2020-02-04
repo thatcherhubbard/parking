@@ -11,11 +11,23 @@ defmodule Parking.Application do
   @max_spaces 100
 
   def start(_type, _args) do
+    # Start telemetry instrumenters
+    Parking.Telemetry.LotInstrumenter.setup()
+    Parking.Telemetry.PrometheusExporter.setup()
+
+    # NOTE: Only for FreeBSD, Linux and OSX (experimental)
+    # https://github.com/deadtrickster/prometheus_process_collector
+    Prometheus.Registry.register_collector(:prometheus_process_collector)
+
     # Retrieve the topologies from the config
     topologies = Application.get_env(:libcluster, :topologies)
 
     # List all child processes to be supervised
     children = [
+      # Start the endpoint when the application starts
+      ParkingWeb.Endpoint,
+      # Start the telemetry endpoint
+      Parking.Telemetry.Endpoint,
       # Cluster supervisor
       {Cluster.Supervisor, [topologies, [name: Parking.ClusterSupervisor]]},
       # Horde registry
@@ -51,11 +63,7 @@ defmodule Parking.Application do
             end
           ]
         }
-      },
-      # Start the endpoint when the application starts
-      ParkingWeb.Endpoint
-      # Starts a worker by calling: Parking.Worker.start_link(arg)
-      # {Parking.Worker, arg},
+      }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -68,6 +76,7 @@ defmodule Parking.Application do
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
     ParkingWeb.Endpoint.config_change(changed, removed)
+    Parking.Telemetry.Endpoint.config_change(changed, removed)
     :ok
   end
 

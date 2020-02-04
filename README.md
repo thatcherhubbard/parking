@@ -39,7 +39,7 @@ Parking.Lot.track_entry("ABC 123", 1)
 # On gary or harry
 DeltaCrdt.read(Parking.Lot.Crdt)
 ```
-If `larry` is killed at this point, the four gates will distribute over the remaining two nodes.  The `read` command shoudl be repeated to demonstrate that state was in fact shared across all the nodes.
+If `larry` is killed at this point, the four gates will distribute over the remaining two nodes.  The `read` command should be repeated to demonstrate that state was in fact shared across all the nodes.
 
 ## Interesting things to add
 

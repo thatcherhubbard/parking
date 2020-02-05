@@ -1,14 +1,17 @@
 # Parking
 
-A simple example of running clustered processes and sharing state across them using a 𝛿-CRDT mechanism based on [this series of articles](https://metasyntactic.info/distributing-phoenix-part-1/).
+A simple example of running clustered processes and sharing state across them using a 𝛿-CRDT mechanism based on [this series of articles](https://metasyntactic.info/distributing-phoenix-part-1/) by Erik Reedstrom.
 
-The series wasn't completed by the original author's stated intent, but it's a pretty concise run through the nuts-and-bolts of exploiting Elixir/BEAM clustering in Kubernetes, and also a nice introduction to CRDT mechanisms. Finally, it also is a decent example of how to use the runtime `Config` module in place of the compile-time `Mix.Config` and the Elixir 1.9+ release facility.
+It seems he originally planned on writing a longer series on the subject, but even with just the two articles it's a concise and valuable run through the nuts-and-bolts of exploiting Elixir/BEAM clustering in Kubernetes, and also a nice introduction to CRDT mechanisms. Finally, it also is a decent example of how to use the runtime `Config` module in place of the compile-time `Mix.Config` and the Elixir 1.9+ release facility.
 
 ## Requirements
 
 No DB or anything required, it's basically:
 
 - Elixir (1.9.4 was the version developed against)
+
+If you want to actually build a release and deploy it to a Kubernetes cluster:
+
 - Minikube (1.6.2 running K8S 1.16.0 was the version developed against)
 
 ## Configuration
@@ -38,8 +41,24 @@ Parking.Lot.track_entry("ABC 123", 1)
 ```elixir
 # On gary or harry
 DeltaCrdt.read(Parking.Lot.Crdt)
+Parking.Lot.track_exit("ABC 123", 1)
+Parking.Lot.track_entry("2FAST4U", 3)
 ```
+
+```elixir
+# Back on larry
+DeltaCrdt.read(Parking.Lot.Crdt)
+```
+
+All four gate GenServers are running on `larry`, so running the `track_exit` and `track_entry` commands on another node demonstrates the distributed nature of the app.
+
 If `larry` is killed at this point, the gates will distribute over the remaining two nodes.  The `read` command should be repeated to demonstrate that state was in fact shared across all the nodes.
+
+## Features
+
+Since it's supposed to be a sandbox for developing good production-ready patterns and explaining the what and why, there's a specific documentation file for each:
+
+- [Telemetry](https://github.com/thatcherhubbard/parking/docs/TELEMETRY.md)
 
 ## Interesting things to add
 
@@ -47,8 +66,8 @@ If `larry` is killed at this point, the gates will distribute over the remaining
 - Try replacing `Config` with `Vapor`
 - Write actual tests
 - Write a Helm chart
-- Add a `Telemetry` implementation
+- ~~Add a `Telemetry` implementation~~ Write useful telemetry instrumenters
 - Replace the eventually-consistent CRDT implementation with something based on [Raft](https://github.com/rabbitmq/ra) that won't return a value until there is consensus inside the cluster
-- Write a load-testing/benchmarking suite and corresponding telemetry updates
-- Implement a fanout mechanism (e.g [Manifold](https://github.com/thatcherhubbard/parking))
+- Write a load-testing/benchmarking suite and corresponding telemetry updates (e.g [Benchfella](https://github.com/alco/benchfella))
+- Implement a fanout mechanism (e.g [Manifold](https://github.com/discordapp/manifold))
 

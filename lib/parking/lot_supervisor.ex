@@ -1,6 +1,8 @@
 defmodule Parking.LotSupervisor do
   use Supervisor
 
+  require Logger
+
   def start_link([args, opts]) do
     Supervisor.start_link(__MODULE__, args, opts)
   end
@@ -44,5 +46,20 @@ defmodule Parking.LotSupervisor do
     Enum.each(combos, fn {crdt, crdts} ->
       :ok = DeltaCrdt.set_neighbours(crdt, crdts)
     end)
+  end
+
+  def start_raft(_args) do
+    # the initial cluster members
+    members = Enum.map([Node.list()] ++ Node.self(), fn node -> {:parking, node} end)
+    # an arbitrary cluster name
+    clusterName = <<"ra_kv">>
+    # the config passed to `init/1`, must be a `map`
+    config = %{}
+    # the machine configuration
+    machine = {:module, Parking.Raft.Machine, config}
+    # ensure ra is started
+    Application.ensure_all_started(:ra)
+    # start a cluster instance running the `ra_kv` machine
+    :ra.start_cluster(clusterName, machine, members)
   end
 end

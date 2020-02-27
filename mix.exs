@@ -38,6 +38,7 @@ defmodule Parking.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:benchfella, "~> 0.3.0", only: :dev},
       {:horde, "~> 0.7.1"},
       {:libcluster, "~> 3.1"},
       {:phoenix, "~> 1.4.11"},
@@ -52,6 +53,7 @@ defmodule Parking.MixProject do
       {:prometheus_phoenix, "~> 1.3"},
       {:prometheus_plugs, "~> 1.1.5"},
       {:prometheus_process_collector, "~> 1.4"},
+      {:ra, "~> 1.0"},
       {:telemetry, "~> 0.4.1"}
     ]
   end

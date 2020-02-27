@@ -3,6 +3,8 @@ defmodule Parking.Lot do
 
   require Logger
 
+  alias Parking.ParkingKv
+
   @crdt Parking.Lot.Crdt
 
   ## Client API
@@ -22,7 +24,7 @@ defmodule Parking.Lot do
       DeltaCrdt.read(@crdt)
       |> Enum.group_by(fn {{k, _}, _} -> k end, fn {{_, kv}, v} -> {kv, v} end)
 
-    # Set vehicles from CRTD if present
+    # Set vehicles from CRDT if present
     vehicles = crdt_state |> Map.get(:vehicle, []) |> Map.new()
     state = Map.put(state, :vehicles, vehicles)
 
@@ -58,9 +60,9 @@ defmodule Parking.Lot do
 
     # Update CRDT and state
 
-    time = System.monotonic_time()
+    time = %{time: DateTime.utc_now()}
 
-    DeltaCrdt.mutate(@crdt, :add, [{:vehicle, license}, time], :infinity)
+    ParkingKv.put({:parking_kv, Node.self()}, license, time)
     vehicles = state |> Map.get(:vehicles) |> Map.put(license, time)
 
     {:noreply, %{state | vehicles: vehicles}}
@@ -71,8 +73,19 @@ defmodule Parking.Lot do
 
     # Update CRDT and state
 
-    DeltaCrdt.mutate(@crdt, :remove, [{:vehicle, license}])
+    ParkingKv.delete({:parking_kv, Node.self()}, license)
     vehicles = state |> Map.get(:vehicles) |> Map.delete(license)
+
+    {:noreply, %{state | vehicles: vehicles}}
+  end
+
+  def handle_cast({:track_parked, license, stall_number}, state) do
+    Logger.info("===> Vehicle '#{license}' parked in stall #{stall_number}")
+
+    # Update CRDT and state
+
+    :ra.process_command(Node.self(), {:update, license, update = %{stall_number: stall_number}})
+    vehicles = state |> Map.get(:vehicles) |> Map.merge(license, update)
 
     {:noreply, %{state | vehicles: vehicles}}
   end

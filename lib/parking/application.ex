@@ -59,7 +59,8 @@ defmodule Parking.Application do
               1..@max_gates |> Enum.map(&init_gate/1)
 
               # Establish parking lot CRDT network
-              Parking.LotSupervisor.join_neighbourhood(nodes())
+              # Parking.LotSupervisor.join_neighbourhood(nodes())
+              # Parking.ParkingKv.start(nil)
             end
           ]
         }
@@ -70,6 +71,8 @@ defmodule Parking.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Parking.Supervisor]
     Supervisor.start_link(children, opts)
+
+    # Once the cluster is up, start the Raft
   end
 
   # Tell Phoenix to update the endpoint configuration
